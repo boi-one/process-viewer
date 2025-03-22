@@ -27,7 +27,7 @@ namespace ProcessViewer
         {
             while(true)
             {
-                foreach(var app in Form1.allTrackableApplications)
+                foreach(var app in Trackable.allTrackableApplications)
                 {
                     Process[] processes = Process.GetProcessesByName(app.fileName);
                     foreach (Process p in processes)
@@ -37,7 +37,7 @@ namespace ProcessViewer
                         Form1.UpdateListView1();
                     }
                 }
-                Console.WriteLine(Form1.allTrackableApplications.Count);
+                Console.WriteLine(Trackable.allTrackableApplications.Count);
 
 
                 Thread.Sleep(2000); //goodnait

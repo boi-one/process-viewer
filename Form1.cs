@@ -23,18 +23,6 @@ namespace ProcessViewer
 
         }
 
-        public class TrackableApplication
-        {
-            public string fileName = "";
-            public int processId = 0;
-            public string processName = "";
-            public bool active = false;
-            public int startTime = 0;
-            public int stopTime = 0;
-        }
-
-        public static List<TrackableApplication> allTrackableApplications = new List<TrackableApplication>();
-
         private void button1_Click(object sender, EventArgs e)
         {
             OpenFileDialog FD = new OpenFileDialog();
@@ -45,9 +33,9 @@ namespace ProcessViewer
                 string fileName = Path.GetFileName(FD.FileName);
                 string cleanFileName = Path.GetFileNameWithoutExtension(FD.FileName);
                 Process[] processes = Process.GetProcessesByName(cleanFileName);
-                var app = new TrackableApplication();
+                var app = new Trackable();
 
-                foreach(var trackable in allTrackableApplications)
+                foreach(var trackable in Trackable.allTrackableApplications)
                 {
                     if(trackable.fileName == cleanFileName)
                     {
@@ -65,7 +53,7 @@ namespace ProcessViewer
                     }
                 } //TODO: herschrijf dit
 
-                allTrackableApplications.Add(app);
+                Trackable.allTrackableApplications.Add(app);
                 foreach (Process p in processes)
                 {
                     app.processId = p.Id;
@@ -81,7 +69,7 @@ namespace ProcessViewer
 
         public static void UpdateListView1()
         {
-            foreach (var app in allTrackableApplications)
+            foreach (var app in Trackable.allTrackableApplications)
             {
                 Process[] processes = Process.GetProcessesByName(app.fileName);
                 foreach (var process in processes)
