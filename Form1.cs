@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics;
+using System.Media;
 
 namespace ProcessViewer
 {
@@ -8,8 +10,6 @@ namespace ProcessViewer
         {
             InitializeComponent();
         }
-
-        private ListViewItem listViewItem;
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -21,6 +21,18 @@ namespace ProcessViewer
             processesView.Columns.Add("Start");
             processesView.Columns.Add("Stop");
 
+            MaximizeBox = false;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+        }
+
+        private void AddItem(Trackable app)
+        {
+            ListViewItem row = new ListViewItem(app.fileName);
+            app.active = (app.processId > 0 && app.processName != null);
+            row.SubItems.Add(app.active ? "true" : "false");
+            processesView.Items.Add(row);
+
+            Console.WriteLine($"{app.fileName}, {app.processName}, {app.processId}");
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -33,51 +45,74 @@ namespace ProcessViewer
                 string fileName = Path.GetFileName(FD.FileName);
                 string cleanFileName = Path.GetFileNameWithoutExtension(FD.FileName);
                 Process[] processes = Process.GetProcessesByName(cleanFileName);
-                var app = new Trackable();
 
-                foreach(var trackable in Trackable.allTrackableApplications)
+                /*
+                 string cleanFileName = Path.GetFileNameWithoutExtension(FD.FileName);
+Process[] allProcesses = Process.GetProcesses();
+foreach (Process process in allProcesses)
+{
+    string processName = Path.GetFileNameWithoutExtension(process.MainModule.FileName);
+    if (processName.Equals(cleanFileName, StringComparison.OrdinalIgnoreCase))
+    {
+        // Process found
+    }
+} // kijk hier naar
+                 
+                 */
+
+                Process process = null;
+                int processId = 0;
+                string processName = "null";
+
+                if (processes.Length > 0) process = processes[0];
+                else if (process != null)
                 {
-                    if(trackable.fileName == cleanFileName)
+                    processId = process.Id;
+                    processName = process.ProcessName;
+                }
+
+                Trackable app = new Trackable();
+
+
+
+                if (Trackable.allTrackableApplications.Count < 1)
+                {
+                    app.SetTrackable(cleanFileName, processId, processName);
+                    Trackable.allTrackableApplications.Add(app);
+                    AddItem(app);
+                }
+                else
+                {
+                    foreach (Trackable trackable in Trackable.allTrackableApplications)
                     {
-                        app = trackable;
-                        break;
-                    }
-                    else
-                    {
-                        app.fileName = cleanFileName;
-                        foreach (var p in processes)
+                        if (trackable.fileName == cleanFileName)
                         {
-                            app.processName = p.ProcessName;
-                            app.processId = p.Id;
+                            app = trackable;
+                            SystemSounds.Exclamation.Play();
+                            MessageBox.Show("You only need to add an application once.", "Already tracking this application.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                            break;
+                        }
+                        else
+                        {
+                            app.SetTrackable(cleanFileName, processId, processName);
+                            Trackable.allTrackableApplications.Add(app);
+                            AddItem(app);
                         }
                     }
-                } //TODO: herschrijf dit
-
-                Trackable.allTrackableApplications.Add(app);
-                foreach (Process p in processes)
-                {
-                    app.processId = p.Id;
-                    app.processName = p.ProcessName;
                 }
-                Console.WriteLine($"{app.fileName}, {app.processName}, {app.processId}");
-                ListViewItem row = new ListViewItem(app.fileName);
-                app.active = (app.processId > 0 && app.processName != null);
-                row.SubItems.Add(app.active ? "true" : "false");
-                processesView.Items.Add(row);
             }
         }
 
-        public static void UpdateListView1()
+        public void UpdateProcessesView()
         {
-            foreach (var app in Trackable.allTrackableApplications)
+            foreach (Trackable app in Trackable.allTrackableApplications.ToList())
             {
                 Process[] processes = Process.GetProcessesByName(app.fileName);
-                foreach (var process in processes)
+                foreach (ListViewItem i in processesView.Items)
                 {
-                    if (process.ProcessName == app.processName || process.Id == app.processId)
-                    {
-                        
-                    }
+                    if (i.Text != app.fileName) continue;
+                    app.active = processes.Length > 0 ? true : false;
                 }
             }
         }
@@ -85,6 +120,11 @@ namespace ProcessViewer
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
             Console.WriteLine("happens");
+        }
+
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
         }
     }
 }

@@ -13,6 +13,14 @@ public class Trackable
     public int stopTime = 0;
 
     public Trackable()
-	{
-	}
+    {
+
+    }
+
+    public void SetTrackable(string fname, int processid, string pname)
+    {
+        fileName = fname;
+        processId = processid;
+        processName = pname;
+    }
 }
