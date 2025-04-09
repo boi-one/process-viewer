@@ -54,6 +54,7 @@
             processesView.TabIndex = 1;
             processesView.UseCompatibleStateImageBehavior = false;
             processesView.View = View.Details;
+            processesView.SelectedIndexChanged += processesView_SelectedIndexChanged;
             // 
             // menuStrip1
             // 

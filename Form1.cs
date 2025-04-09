@@ -9,6 +9,43 @@ namespace ProcessViewer
         public Form1()
         {
             InitializeComponent();
+            Thread watcher = new Thread(Monitor);
+            watcher.IsBackground = true;
+            watcher.Start();
+        }
+
+        void Monitor()
+        {
+            while (true)
+            {
+                foreach (var app in Trackable.allTrackableApplications.ToList())
+                {
+                    Process[] processes = Process.GetProcessesByName(app.fileName);
+                    Process process = null;
+                    if (processes.Length > 0)
+                    {
+                        process = processes[0];
+                    }
+
+                    if (process == null)
+                    {
+                        app.processId = 0;
+                        app.processName = "null";
+                    }
+                    else
+                    {
+                        app.processId = process.Id;
+                        app.processName = process.ProcessName;
+                    }
+
+                    if (InvokeRequired) Invoke(() => UpdateProcessesView); //check if it can be invoked
+
+
+                    Console.WriteLine("updated");
+                }
+
+                Thread.Sleep(2000); //goodnait
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -73,8 +110,6 @@ foreach (Process process in allProcesses)
 
                 Trackable app = new Trackable();
 
-
-
                 if (Trackable.allTrackableApplications.Count < 1)
                 {
                     app.SetTrackable(cleanFileName, processId, processName);
@@ -123,6 +158,11 @@ foreach (Process process in allProcesses)
         }
 
         private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void processesView_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
